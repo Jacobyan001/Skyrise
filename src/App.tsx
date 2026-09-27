@@ -15,6 +15,9 @@ const App: React.FC = () => {
   // 登录 / 开始状态
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // 用户自己的硅基流动 API KEY（保存在 localStorage，每次请求带给服务端）
+  const [apiKey, setApiKey] = useState('');
+
   // 状态
   const [viewMode, setViewMode] = useState<ViewMode>('SCHEDULE');
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
@@ -22,7 +25,6 @@ const App: React.FC = () => {
   const [layers, setLayers] = useState<BuildingLayer[]>([]);
   const [completedTowers, setCompletedTowers] = useState<CompletedTower[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [aiStatus, setAiStatus] = useState<{ siliconflow: boolean; zhipu: boolean } | null>(null);
 
   // 竣工中
   const [isArchiving, setIsArchiving] = useState(false);
@@ -30,15 +32,7 @@ const App: React.FC = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 检查 AI 服务状态
-  useEffect(() => {
-    fetch('/api/health')
-      .then(r => r.json())
-      .then(d => setAiStatus(d.providers || null))
-      .catch(() => setAiStatus(null));
-  }, []);
-
-  // 从 IndexedDB 加载
+  // 从 IndexedDB / localStorage 加载
   useEffect(() => {
     const initData = async () => {
       try {
@@ -57,8 +51,10 @@ const App: React.FC = () => {
         if (savedLayers && Array.isArray(savedLayers)) setLayers(savedLayers);
         if (savedTowers && Array.isArray(savedTowers)) setCompletedTowers(savedTowers);
 
-        // 回访用户自动跳过着陆页
-        if (localStorage.getItem('skyrise_started') === '1') {
+        // 回访用户：有已保存的 KEY 才自动跳过着陆页
+        const savedApiKey = localStorage.getItem('skyrise_sf_key') || '';
+        setApiKey(savedApiKey);
+        if (localStorage.getItem('skyrise_started') === '1' && savedApiKey) {
           setIsAuthenticated(true);
         }
       } catch (e) {
@@ -92,11 +88,15 @@ const App: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [tasks, inventory, layers, completedTowers, isDataLoaded]);
 
-  const handleLogin = () => {
+  // 着陆页校验通过后：保存 KEY 并进入应用
+  const handleLogin = (key: string) => {
+    localStorage.setItem('skyrise_sf_key', key);
     localStorage.setItem('skyrise_started', '1');
+    setApiKey(key);
     setIsAuthenticated(true);
   };
 
+  // 退出只返回着陆页（保留 KEY，方便直接重新进入或更换）
   const handleLogout = () => {
     localStorage.removeItem('skyrise_started');
     setIsAuthenticated(false);
@@ -168,7 +168,7 @@ const App: React.FC = () => {
       const allKeywords = layers.flatMap(l => l.keywords || []);
 
       // 生成写实照片
-      const realisticImage = await generateRealisticTowerImage(summaryText, layers.length, allKeywords);
+      const realisticImage = await generateRealisticTowerImage(summaryText, layers.length, allKeywords, apiKey);
 
       // 解析 NAME: 与总结正文
       let towerName = `大楼 #${completedTowers.length + 1}`;
@@ -274,7 +274,7 @@ const App: React.FC = () => {
 
   // --- 着陆页 ---
   if (!isAuthenticated) {
-    return <LandingPage onStart={handleLogin} aiStatus={aiStatus} />;
+    return <LandingPage onStart={handleLogin} initialKey={apiKey} />;
   }
 
   return (
@@ -312,28 +312,28 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* 第二行：三个 Tab，等宽分段控件 */}
+          {/* 第二行：三个 Tab，等宽分段控件；手机端只显示中文省空间，桌面端显示中英文 */}
           <div className="flex gap-1.5 md:gap-2">
             <PixelButton
               onClick={() => setViewMode('SCHEDULE')}
               variant={viewMode === 'SCHEDULE' ? 'secondary' : 'primary'}
-              className="flex-1 text-sm md:text-xl py-1 md:py-2 px-1 md:px-4 tracking-normal"
+              className="flex-1 text-base md:text-xl py-0.5 md:py-2 px-1 md:px-4 tracking-normal whitespace-nowrap"
             >
-              任务 SCHEDULE
+              <span>任务</span><span className="hidden md:inline"> SCHEDULE</span>
             </PixelButton>
             <PixelButton
               onClick={() => setViewMode('TOWER')}
               variant={viewMode === 'TOWER' ? 'secondary' : 'primary'}
-              className="flex-1 text-sm md:text-xl py-1 md:py-2 px-1 md:px-4 tracking-normal"
+              className="flex-1 text-base md:text-xl py-0.5 md:py-2 px-1 md:px-4 tracking-normal whitespace-nowrap"
             >
-              大楼 TOWER
+              <span>大楼</span><span className="hidden md:inline"> TOWER</span>
             </PixelButton>
             <PixelButton
               onClick={() => setViewMode('CITY')}
               variant={viewMode === 'CITY' ? 'secondary' : 'primary'}
-              className="flex-1 text-sm md:text-xl py-1 md:py-2 px-1 md:px-4 tracking-normal"
+              className="flex-1 text-base md:text-xl py-0.5 md:py-2 px-1 md:px-4 tracking-normal whitespace-nowrap"
             >
-              城市 CITY
+              <span>城市</span><span className="hidden md:inline"> CITY</span>
             </PixelButton>
           </div>
         </div>
@@ -357,6 +357,7 @@ const App: React.FC = () => {
           <Skyscraper
             layers={layers}
             inventory={inventory}
+            apiKey={apiKey}
             onBuildLayer={handleBuildLayer}
             onUpdateLayer={handleUpdateLayer}
             onConsumeInventory={handleConsumeInventory}

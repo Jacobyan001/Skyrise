@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560" shape-rendering="crispEdges">
+  <!-- 主楼天线 -->
+  <rect x="196" y="26" width="8" height="46" fill="#334155"/>
+  <rect x="190" y="12" width="20" height="16" fill="#fde047"/>
+  <!-- 主楼屋顶 -->
+  <rect x="100" y="72" width="200" height="20" fill="#1e3a8a"/>
+  <!-- 主楼楼体 -->
+  <rect x="110" y="92" width="180" height="428" fill="#1e40af"/>
+  <!-- 右侧阴影 -->
+  <rect x="262" y="92" width="28" height="428" fill="#1d4ed8"/>
+  <!-- 左侧高光 -->
+  <rect x="110" y="92" width="10" height="428" fill="#3b82f6"/>
+
+  <!-- 窗户：6 行 × 4 列，黄/蓝/暗色交替 -->
+  <!-- 第 1 行 -->
+  <rect x="126" y="112" width="28" height="28" fill="#fde047"/>
+  <rect x="168" y="112" width="28" height="28" fill="#fbbf24"/>
+  <rect x="210" y="112" width="28" height="28" fill="#93c5fd"/>
+  <rect x="252" y="112" width="28" height="28" fill="#fde047"/>
+  <!-- 第 2 行 -->
+  <rect x="126" y="162" width="28" height="28" fill="#fbbf24"/>
+  <rect x="168" y="162" width="28" height="28" fill="#1e3a8a"/>
+  <rect x="210" y="162" width="28" height="28" fill="#fde047"/>
+  <rect x="252" y="162" width="28" height="28" fill="#fbbf24"/>
+  <!-- 第 3 行 -->
+  <rect x="126" y="212" width="28" height="28" fill="#fde047"/>
+  <rect x="168" y="212" width="28" height="28" fill="#fde047"/>
+  <rect x="210" y="212" width="28" height="28" fill="#fbbf24"/>
+  <rect x="252" y="212" width="28" height="28" fill="#93c5fd"/>
+  <!-- 第 4 行 -->
+  <rect x="126" y="262" width="28" height="28" fill="#93c5fd"/>
+  <rect x="168" y="262" width="28" height="28" fill="#fbbf24"/>
+  <rect x="210" y="262" width="28" height="28" fill="#1e3a8a"/>
+  <rect x="252" y="262" width="28" height="28" fill="#fde047"/>
+  <!-- 第 5 行 -->
+  <rect x="126" y="312" width="28" height="28" fill="#fde047"/>
+  <rect x="168" y="312" width="28" height="28" fill="#fbbf24"/>
+  <rect x="210" y="312" width="28" height="28" fill="#fde047"/>
+  <rect x="252" y="312" width="28" height="28" fill="#fde047"/>
+  <!-- 第 6 行 -->
+  <rect x="126" y="362" width="28" height="28" fill="#fbbf24"/>
+  <rect x="168" y="362" width="28" height="28" fill="#93c5fd"/>
+  <rect x="210" y="362" width="28" height="28" fill="#fde047"/>
+  <rect x="252" y="362" width="28" height="28" fill="#1e3a8a"/>
+  <!-- 底层两侧窗户（给大门留位） -->
+  <rect x="126" y="452" width="28" height="28" fill="#fde047"/>
+  <rect x="252" y="452" width="28" height="28" fill="#fbbf24"/>
+
+  <!-- 大门 -->
+  <rect x="178" y="448" width="44" height="72" fill="#0f172a"/>
+  <rect x="178" y="448" width="44" height="6" fill="#fde047"/>
+  <rect x="178" y="448" width="6" height="72" fill="#fde047"/>
+  <rect x="216" y="448" width="6" height="72" fill="#fde047"/>
+  <rect x="206" y="482" width="8" height="8" fill="#fde047"/>
+
+  <!-- 左侧配楼 -->
+  <rect x="10" y="200" width="100" height="18" fill="#1e40af"/>
+  <rect x="20" y="218" width="80" height="302" fill="#2563eb"/>
+  <rect x="34" y="240" width="28" height="28" fill="#fde047"/>
+  <rect x="66" y="240" width="28" height="28" fill="#93c5fd"/>
+  <rect x="34" y="290" width="28" height="28" fill="#93c5fd"/>
+  <rect x="66" y="290" width="28" height="28" fill="#fbbf24"/>
+  <rect x="34" y="340" width="28" height="28" fill="#fbbf24"/>
+  <rect x="66" y="340" width="28" height="28" fill="#fde047"/>
+  <rect x="34" y="390" width="28" height="28" fill="#fde047"/>
+  <rect x="66" y="390" width="28" height="28" fill="#1e3a8a"/>
+  <rect x="34" y="440" width="28" height="28" fill="#93c5fd"/>
+  <rect x="66" y="440" width="28" height="28" fill="#fde047"/>
+
+  <!-- 右侧配楼 -->
+  <rect x="290" y="250" width="100" height="18" fill="#1d4ed8"/>
+  <rect x="300" y="268" width="80" height="252" fill="#3b82f6"/>
+  <rect x="314" y="290" width="28" height="28" fill="#fde047"/>
+  <rect x="346" y="290" width="28" height="28" fill="#fbbf24"/>
+  <rect x="314" y="340" width="28" height="28" fill="#93c5fd"/>
+  <rect x="346" y="340" width="28" height="28" fill="#fde047"/>
+  <rect x="314" y="390" width="28" height="28" fill="#fbbf24"/>
+  <rect x="346" y="390" width="28" height="28" fill="#93c5fd"/>
+  <rect x="314" y="440" width="28" height="28" fill="#fde047"/>
+  <rect x="346" y="440" width="28" height="28" fill="#1e3a8a"/>
+
+  <!-- 地面 -->
+  <rect x="0" y="520" width="400" height="40" fill="#f59e0b"/>
+  <rect x="0" y="520" width="400" height="6" fill="#b45309"/>
+</svg>

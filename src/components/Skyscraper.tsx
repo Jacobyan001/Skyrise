@@ -7,6 +7,7 @@ import { FLOORS_PER_STAGE } from '../constants.ts';
 interface SkyscraperProps {
   layers: BuildingLayer[];
   inventory: string[];
+  apiKey: string;
   onBuildLayer: (newLayer: BuildingLayer) => void;
   onUpdateLayer: (updatedLayer: BuildingLayer) => void;
   onConsumeInventory: (keywords: string[]) => void;
@@ -16,6 +17,7 @@ interface SkyscraperProps {
 const Skyscraper: React.FC<SkyscraperProps> = ({
   layers,
   inventory,
+  apiKey,
   onBuildLayer,
   onUpdateLayer,
   onConsumeInventory,
@@ -78,7 +80,7 @@ const Skyscraper: React.FC<SkyscraperProps> = ({
 
     try {
       const currentLevel = layers.length + 1;
-      const imageUrl = await generateFloorImage(selectedKeywords, currentLevel);
+      const imageUrl = await generateFloorImage(selectedKeywords, currentLevel, apiKey);
 
       const newLayer: BuildingLayer = {
         id: Date.now().toString(),
@@ -114,7 +116,7 @@ const Skyscraper: React.FC<SkyscraperProps> = ({
     setActiveMobileLayerId(null);
 
     try {
-      const newImageUrl = await generateFloorImage(keywordsToUse, layer.level);
+      const newImageUrl = await generateFloorImage(keywordsToUse, layer.level, apiKey);
       onUpdateLayer({ ...layer, imageUrl: newImageUrl });
     } catch (e: any) {
       if (e.message === 'QUOTA_EXHAUSTED') {
@@ -136,7 +138,7 @@ const Skyscraper: React.FC<SkyscraperProps> = ({
     setBuildError(null);
 
     try {
-      const summary = await generateTowerSummary(layers);
+      const summary = await generateTowerSummary(layers, apiKey);
       setTowerSummary(summary);
       setShowFinishModal(true);
     } catch (e) {
@@ -389,10 +391,11 @@ const Skyscraper: React.FC<SkyscraperProps> = ({
                       </div>
                     )}
 
+                    {/* 手机端常驻显示（半透明小按钮，既看得见又不易误触）；桌面端悬停楼层时才出现 */}
                     <div
                       className={`
                         absolute top-1.5 right-1.5 md:top-2 md:right-2 z-40 flex gap-2 transition-opacity duration-200
-                        ${activeMobileLayerId === layer.id ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}
+                        ${activeMobileLayerId === layer.id ? 'opacity-100' : 'opacity-60 active:opacity-100 lg:opacity-0 lg:group-hover:opacity-100'}
                         ${isRegenerating ? 'hidden' : ''}
                       `}
                     >
@@ -402,7 +405,7 @@ const Skyscraper: React.FC<SkyscraperProps> = ({
                           handleRegenerate(layer);
                         }}
                         title="重新生成"
-                        className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center bg-green-500 border-2 border-black text-white text-lg md:text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-y-0.5 hover:shadow-none transition-all"
+                        className="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center bg-black/70 md:bg-green-500 border-2 border-white/80 md:border-black text-white text-base md:text-xl shadow-none md:shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-y-0.5 md:hover:shadow-none transition-all touch-manipulation"
                       >
                         ↻
                       </button>

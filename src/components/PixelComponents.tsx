@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface PixelButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'success';
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'accent';
 }
 
 export const PixelButton: React.FC<PixelButtonProps> = ({ children, className = '', variant = 'primary', ...props }) => {
@@ -10,6 +10,7 @@ export const PixelButton: React.FC<PixelButtonProps> = ({ children, className = 
     secondary: 'bg-white hover:bg-gray-100',
     danger: 'bg-pixel-danger hover:bg-red-400',
     success: 'bg-pixel-success hover:bg-green-400',
+    accent: 'bg-pixel-accent hover:bg-amber-400',
   };
 
   const textColors = {
@@ -17,6 +18,7 @@ export const PixelButton: React.FC<PixelButtonProps> = ({ children, className = 
     secondary: 'text-black',
     danger: 'text-white',
     success: 'text-white',
+    accent: 'text-black',
   };
 
   return (

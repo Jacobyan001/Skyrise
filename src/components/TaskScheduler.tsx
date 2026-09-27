@@ -144,15 +144,16 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
             <h2 className="text-xl md:text-3xl font-pixel text-pixel-dark leading-tight">任务指挥中心 MISSION CONTROL</h2>
             <p className="font-pixel text-sm md:text-base text-gray-600">完成任务，赢取资源 Token 去盖楼！</p>
           </div>
-          <div className="flex gap-2 items-center flex-wrap justify-start md:justify-end">
-            <div className="bg-yellow-200 border-2 border-black px-2 py-1 font-pixel text-sm">
+          {/* 手机端三个元素也强制一行不换行：Token 固定宽度，两个按钮平分剩余空间 */}
+          <div className="flex gap-1.5 md:gap-2 items-center flex-nowrap justify-start md:justify-end w-full md:w-auto">
+            <div className="bg-yellow-200 border-2 border-black px-1.5 md:px-2 py-1 font-pixel text-xs md:text-sm whitespace-nowrap flex-shrink-0">
               💎 TOKEN: {inventory.length}
             </div>
 
             <PixelButton
               onClick={handleResetWeekClick}
               variant={isResetConfirming ? 'danger' : 'secondary'}
-              className={`py-1 px-2 md:py-2 md:px-4 text-sm min-w-0 transition-all ${isResetConfirming ? 'animate-pulse' : ''}`}
+              className={`flex-1 md:flex-none py-1 px-1.5 md:py-2 md:px-4 text-xs md:text-sm min-w-0 whitespace-nowrap tracking-normal transition-all ${isResetConfirming ? 'animate-pulse' : ''}`}
               title="取消所有勾选，开始新的一周"
             >
               {isResetConfirming ? '确认重置？' : '↺ 新的一周'}
@@ -165,7 +166,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
                 resetForm();
                 setIsFormOpen(true);
               }
-            }} className="py-1 px-2 md:py-2 md:px-4 text-sm">
+            }} className="flex-1 md:flex-none py-1 px-1.5 md:py-2 md:px-4 text-xs md:text-sm min-w-0 whitespace-nowrap tracking-normal">
               {isFormOpen && !editingId ? '关闭' : '+ 新任务'}
             </PixelButton>
           </div>

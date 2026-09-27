@@ -9,6 +9,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+
   if (!res.ok) {
     let message = `HTTP ${res.status}`;
     try {
@@ -47,18 +48,13 @@ const compressImage = (base64Str: string): Promise<string> =>
   });
 
 // 生成楼层像素图
-// 有 API Key 走 AI；AI 失败（含无 Key）直接抛错提示用户，不再用写死兜底图欺骗用户
+// 用户 KEY 随请求传给服务端；AI 失败（含无 Key）直接抛错提示用户，不再用写死兜底图欺骗用户
 export async function generateFloorImage(
   keywords: string[],
-  level: number
+  level: number,
+  apiKey: string
 ): Promise<string> {
-  let useAI = false;
-  try {
-    const res = await fetch(`${API_BASE}/api/config`);
-    if (res.ok) useAI = (await res.json())?.hasImageKey === true;
-  } catch { /* 服务不可达 */ }
-
-  if (!useAI) {
+  if (!apiKey) {
     throw new Error('QUOTA_EXHAUSTED');
   }
 
@@ -67,6 +63,7 @@ export async function generateFloorImage(
       kind: 'floor',
       keywords,
       level,
+      apiKey,
     });
     return compressImage(data.image);
   } catch (err) {
@@ -79,21 +76,24 @@ export async function generateFloorImage(
 export async function generateRealisticTowerImage(
   summary: string,
   floorCount: number,
-  themes: string[]
+  themes: string[],
+  apiKey: string
 ): Promise<string> {
   const data = await postJson<{ image: string; provider: string }>('/api/image', {
     kind: 'tower',
     level: floorCount,
     summary,
     themes,
+    apiKey,
   });
   return data.image; // 写实照保留原尺寸质量
 }
 
 // 竣工：生成大楼命名与总结
 export async function generateTowerSummary(
-  layers: { level: number; keywords?: string[]; description?: string; prompt?: string }[]
+  layers: { level: number; keywords?: string[]; description?: string; prompt?: string }[],
+  apiKey: string
 ): Promise<string> {
-  const data = await postJson<{ text: string; provider: string }>('/api/summary', { layers });
+  const data = await postJson<{ text: string; provider: string }>('/api/summary', { layers, apiKey });
   return data.text;
 }

@@ -87,7 +87,7 @@ const P_N_SIZE = { '16:9': [1024, 576], '9:16': [576, 1024] };
 
 // ---------- 文生图 Provider ----------
 
-async function genImageSiliconFlow(prompt, aspect, negative, pixelate, gridW, model = SF_IMAGE_MODEL) {
+async function genImageSiliconFlow(prompt, aspect, negative, pixelate, gridW, model = SF_IMAGE_MODEL, key = SILICONFLOW_KEY) {
   const size = SF_SIZES[aspect] || '1024x1024';
   // 随机 seed：让同一 prompt 重新生成时画面构图/细节有显著差异
   const seed = Math.floor(Math.random() * 1000000000);
@@ -95,7 +95,7 @@ async function genImageSiliconFlow(prompt, aspect, negative, pixelate, gridW, mo
   if (negative) payload.negative_prompt = negative;
   const res = await fetchWithTimeout(`${SF_BASE}/images/generations`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SILICONFLOW_KEY}` },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -153,10 +153,10 @@ async function genImagePollinations(prompt, aspect, negative, pixelate, gridW) {
 
 // ---------- 文本生成 Provider ----------
 
-async function chatSiliconFlow(prompt) {
+async function chatSiliconFlow(prompt, key = SILICONFLOW_KEY) {
   const res = await fetchWithTimeout(`${SF_BASE}/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SILICONFLOW_KEY}` },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model: SF_TEXT_MODEL,
       messages: [{ role: 'user', content: prompt }],
@@ -579,8 +579,39 @@ app.get('/api/config', (req, res) => {
   res.json({ hasImageKey: !!SILICONFLOW_KEY || !!ZHIPU_KEY });
 });
 
+// 校验用户在着陆页填入的硅基流动 API KEY 是否有效
+// 用 KEY 请求需要鉴权的接口，返回 200 即有效；服务端不记录、不保存该 KEY
+app.post('/api/validate-key', async (req, res) => {
+  const { apiKey = '' } = req.body || {};
+  const key = typeof apiKey === 'string' ? apiKey.trim() : '';
+  if (!key.startsWith('sk-')) {
+    return res.json({ valid: false });
+  }
+
+  // 依次尝试用户信息接口、模型列表接口（都要求有效 KEY）
+  const urls = [`${SF_BASE}/user/info`, `${SF_BASE}/models`];
+  for (const url of urls) {
+    try {
+      const result = await fetchWithTimeout(url, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${key}` },
+      }, 20000);
+      if (result.ok) return res.json({ valid: true });
+      // 404 说明该集群无此接口，换一个；401/403 说明 KEY 无效，无需再试
+      if (result.status === 401 || result.status === 403) {
+        return res.json({ valid: false });
+      }
+    } catch {
+      // 网络/超时：尝试下一个接口
+    }
+  }
+  return res.json({ valid: false });
+});
+
 app.post('/api/image', async (req, res) => {
-  const { kind = 'floor', keywords = [], level = 1, summary = '', themes = [] } = req.body || {};
+  const { kind = 'floor', keywords = [], level = 1, summary = '', themes = [], apiKey = '' } = req.body || {};
+  // 优先使用用户在着陆页填入的自己的 KEY；没传才用服务端环境变量
+  const requestSfKey = (typeof apiKey === 'string' && apiKey.trim().startsWith('sk-')) ? apiKey.trim() : SILICONFLOW_KEY;
   const aspect = kind === 'tower' ? '9:16' : '16:9';
 
   // 楼层：像素房间提示词 + 负向提示词（人物/普通两套）；竣工照：写实建筑提示词
@@ -605,11 +636,11 @@ app.post('/api/image', async (req, res) => {
 
   const isFloor = kind === 'floor';
   const attempts = [];
-  if (SILICONFLOW_KEY) {
-    attempts.push(['siliconflow', () => genImageSiliconFlow(finalPrompt, aspect, negative, isFloor, gridW)]);
+  if (requestSfKey) {
+    attempts.push(['siliconflow', () => genImageSiliconFlow(finalPrompt, aspect, negative, isFloor, gridW, SF_IMAGE_MODEL, requestSfKey)]);
     // 楼层：主模型失败（限流/内容拒绝）时，换 Qwen-Image 重试
     if (isFloor) {
-      attempts.push(['siliconflow-qwen', () => genImageSiliconFlow(finalPrompt, aspect, negative, isFloor, gridW, SF_IMAGE_MODEL_FALLBACK)]);
+      attempts.push(['siliconflow-qwen', () => genImageSiliconFlow(finalPrompt, aspect, negative, isFloor, gridW, SF_IMAGE_MODEL_FALLBACK, requestSfKey)]);
     }
   }
   if (ZHIPU_KEY) attempts.push(['zhipu', () => genImageZhipu(finalPrompt, aspect, negative, isFloor, gridW)]);
@@ -632,14 +663,16 @@ app.post('/api/image', async (req, res) => {
 });
 
 app.post('/api/summary', async (req, res) => {
-  const { layers = [] } = req.body || {};
+  const { layers = [], apiKey = '' } = req.body || {};
   if (!Array.isArray(layers) || layers.length === 0) {
     return res.status(400).json({ error: 'NO_LAYERS' });
   }
+  // 优先使用用户自己的 KEY
+  const requestSfKey = (typeof apiKey === 'string' && apiKey.trim().startsWith('sk-')) ? apiKey.trim() : SILICONFLOW_KEY;
   const prompt = buildSummaryPrompt(layers);
 
   const attempts = [];
-  if (SILICONFLOW_KEY) attempts.push(['siliconflow', () => chatSiliconFlow(prompt)]);
+  if (requestSfKey) attempts.push(['siliconflow', () => chatSiliconFlow(prompt, requestSfKey)]);
   if (ZHIPU_KEY) attempts.push(['zhipu', () => chatZhipu(prompt)]);
 
   for (const [name, fn] of attempts) {
