@@ -288,8 +288,8 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* 顶部导航 */}
-      <nav className="bg-pixel-primary border-b-4 border-black sticky top-0 z-50 shadow-pixel">
+      {/* 顶部导航；pt 安全区：iOS PWA 全屏模式下避开灵动岛/状态栏，浏览器中 env 值为 0 无影响 */}
+      <nav className="bg-pixel-primary border-b-4 border-black sticky top-0 z-50 shadow-pixel pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-3 md:px-4 py-2 md:py-4 flex flex-col gap-2">
           {/* 第一行：Logo + 存档操作 */}
           <div className="flex items-center justify-between gap-2">
